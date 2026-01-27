@@ -1,0 +1,4 @@
+**/.vscode/
+**/*.py[cod]
+**/__pycache__/
+*.xml.gz
