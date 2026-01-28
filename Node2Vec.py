@@ -53,3 +53,11 @@ model = node2vec.fit(
 
 
 model.wv.save(f"./embedding_data/Node2Vec/embedding_{search_type}.kv")
+
+wv = model.wv
+emb_df = pd.DataFrame(
+    wv.vectors,
+    index=wv.index_to_key
+)
+emb_df.index.name = "style"
+emb_df.to_csv(f"./embedding_data/Node2Vec/embedding_df_{search_type}.csv")

@@ -1,8 +1,7 @@
 import gzip
 import xml.etree.ElementTree as ET
 from gensim.models import Word2Vec
-
-
+import pandas as pd
 
 ver = "20260101"
 search_type = "masters"
@@ -30,3 +29,11 @@ model = Word2Vec(
 )
 
 model.wv.save(f"./embedding_data/Word2Vec/embedding_{search_type}.kv")
+
+wv = model.wv
+emb_df = pd.DataFrame(
+    wv.vectors,
+    index=wv.index_to_key
+)
+emb_df.index.name = "style"
+emb_df.to_csv(f"./embedding_data/Word2Vec/embedding_df_{search_type}.csv")
