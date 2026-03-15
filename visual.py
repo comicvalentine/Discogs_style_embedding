@@ -248,10 +248,10 @@ if __name__ == "__main__":
            n_components=2, 
            tag_name="Main Genre",
            hover_data = genre_prop,
-           umap_kwargs={"min_dist":0.5, "spread":1},
+           umap_kwargs={"min_dist":0.5, "spread":0.6},
            post_script=post_script,
            visual_cfg=VisualConfig(fig_width=1600, fig_height=1200, 
-                                   font_size=10, 
+                                   font_size=10, marker_size = 10,
                                    init_style="Darkwave", init_dragmode="pan", init_margin=10, init_mode="markers+text"))
     
     visual(emb_df=emb_df, 
