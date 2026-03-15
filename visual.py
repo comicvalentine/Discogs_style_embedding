@@ -41,7 +41,7 @@ class VisualConfig:
     marker_size: int = 6
     marker_opacity: float = 0.8
 
-    font_size: int = 8
+    font_size: int = 10
     text_position: str = "top center"
 
     init_mode:str = "markers"
@@ -250,7 +250,9 @@ if __name__ == "__main__":
            hover_data = genre_prop,
            umap_kwargs=None,
            post_script=post_script,
-           visual_cfg=VisualConfig(fig_width=1600, fig_height=1200, init_style="Post-Punk", init_dragmode="pan", init_margin=17, init_mode="markers+text"))
+           visual_cfg=VisualConfig(fig_width=1600, fig_height=1200, 
+                                   font_size=10, 
+                                   init_style="Post-Punk", init_dragmode="pan", init_margin=17, init_mode="markers+text"))
     
     visual(emb_df=emb_df, 
            tag_dict=style_to_main_genre, 
