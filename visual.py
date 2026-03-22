@@ -52,7 +52,7 @@ class VisualConfig:
     color_palette = px.colors.qualitative.Light24
 
     paper_bgcolor = "#F9F9F9"
-    plot_bgcolor = "#E7E7E7"
+    plot_bgcolor = "#E2E2E2"
     grid_color = '#F9F9F9'
 
 
@@ -106,7 +106,18 @@ def visual(emb_df,
     )
     fig.update_layout(
         paper_bgcolor = VisualConfig.paper_bgcolor,
-        plot_bgcolor=VisualConfig.plot_bgcolor
+        plot_bgcolor=VisualConfig.plot_bgcolor,
+        legend=dict(
+            x=0.98,
+            y=0.98,
+            xanchor="right",
+            yanchor="top",
+            bgcolor="rgba(255, 255, 255, 0.88)",
+            bordercolor="rgba(16, 16, 16, 0.10)",
+            borderwidth=1,
+            font=dict(color="#101010"),
+            title=dict(font=dict(color="#101010"))
+        ),
     )
     grid_style = dict(
         showgrid=True, 
@@ -251,8 +262,8 @@ if __name__ == "__main__":
            umap_kwargs={"min_dist":0.5, "spread":0.6},
            post_script=post_script,
            visual_cfg=VisualConfig(fig_width=1600, fig_height=1200, 
-                                   font_size=10, marker_size = 10,
-                                   init_style="Darkwave", init_dragmode="pan", init_margin=10, init_mode="markers+text"))
+                                   font_size=12, marker_size = 15,
+                                   init_style="Darkwave", init_dragmode="pan", init_margin=12, init_mode="markers+text"))
     
     visual(emb_df=emb_df, 
            tag_dict=style_to_main_genre, 
