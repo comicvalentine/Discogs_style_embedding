@@ -225,9 +225,12 @@ searchInput.onkeypress = (e) => {
                 'yaxis.range': [targetY - halfSpanY, targetY + halfSpanY],
                 'shapes': [{
                     type: 'circle', xref: 'x', yref: 'y',
+                    layer: 'below',
                     x0: targetX - circleSize, x1: targetX + circleSize,
                     y0: targetY - circleSize, y1: targetY + circleSize,
-                    line: { color: UI_STYLE.primary, width: 2 }
+                    fillcolor: '#ffffff',
+                    opacity: 1,
+                    line: { width: 0 },
                 }]
             });
             searchInput.style.borderColor = "#18D85F";
