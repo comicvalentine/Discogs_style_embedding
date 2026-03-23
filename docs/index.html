@@ -1,10 +1,82 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
-  <meta charset="utf-8">
-  <title>Discogs Style Embedding</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Discogs Style Explorer</title>
+    <style>
+        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Inter', sans-serif; background: #F6F6F6; overflow: hidden; }
+        
+        .header {
+            height: 80px;
+            background: #101010;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            z-index: 10;
+            position: relative;
+        }
+
+              
+        .title-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .title-text-stack {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .title-group h1 { 
+            margin: 0; 
+            padding: 0;
+            font-size: 32px;
+            font-weight: 800;
+            color: #FFFFFF;
+            line-height: 1.1;
+        }
+
+        .title-group p { 
+            margin: 2px 0 0 0;
+            padding: 0;
+            font-size: 16px; 
+            color: #A0A0A0;
+            font-weight: 400;
+        }
+
+        .logo {
+            height: 60px;
+            width: auto;
+            filter: invert(1);
+        }
+        .viewport {
+            height: calc(100vh - 70px);
+            width: 100%;
+            position: relative;
+        }
+
+        iframe { width: 100%; height: 100%; border: none; }
+    </style>
 </head>
 <body>
-  <a href="style_Node2Vec_masters_umap.html">Open the visualization</a>
+  <header class="header">
+      <div class="title-group">
+          <img src="discogs_icon.svg" alt="Discogs Logo" class="logo">
+          
+          <div class="title-text-stack">
+              <h1>Discogs Subgenre Map</h1>
+              <p>Explore neighbors of your favorite subgenres</p>
+          </div>
+      </div>
+      <div id="external-controls"></div>
+  </header>
+    <main class="viewport">
+        <iframe src="style_Node2Vec_masters_umap.html" id="plot-frame"></iframe>
+    </main>
 </body>
 </html>

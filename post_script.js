@@ -1,17 +1,17 @@
 const plot = document.querySelector('.js-plotly-plot');
 const plotHost = plot.parentNode;
 const layoutWrapper = document.createElement('div');
-layoutWrapper.style = "display: flex; flex-direction: column; align-items: stretch; gap: 12px; width: fit-content;";
+
+layoutWrapper.style = "display: flex; flex-direction: column; align-items: stretch; gap: 12px; width: 100%; position: relative;";
 plotHost.insertBefore(layoutWrapper, plot);
 
 const plotFrame = document.createElement('div');
-plotFrame.style = "position: relative; padding-top: 20px;";
+plotFrame.style = "position: relative; width: 100%; height: 100%;margin-top: 10px;"; 
 layoutWrapper.appendChild(plotFrame);
 plotFrame.appendChild(plot);
-
 // 0. UI 테마 설정
 const UI_STYLE = {
-    bg: '#ffffff',
+    bg: '#F9F9F9',
     primary: '#101010',
     secondary: '#e0e0e0',
     textMain: '#101010',
@@ -26,14 +26,14 @@ const CONTROL_HEIGHT = 36;
 const controlBar = document.createElement('div');
 controlBar.style = `
     position: absolute;
-    left: 20px;
-    top: 8px;
+    left: 80px;
+    top: -5px;
     z-index: 1000;
     display: flex; 
     gap: 12px; 
     align-items: flex-end; 
     flex-wrap: nowrap;
-    padding: 10px;
+    padding: 0px;
     font-family: 'Inter', -apple-system, sans-serif;
 `;
 plotFrame.appendChild(controlBar);
@@ -228,8 +228,8 @@ searchInput.onkeypress = (e) => {
                     layer: 'below',
                     x0: targetX - circleSize, x1: targetX + circleSize,
                     y0: targetY - circleSize, y1: targetY + circleSize,
-                    fillcolor: '#ffffff',
-                    opacity: 1,
+                    fillcolor: UI_STYLE.bg,
+                    opacity: 0.8,
                     line: { width: 0 },
                 }]
             });
@@ -265,7 +265,7 @@ const miniMapContainer = document.createElement('div');
 miniMapContainer.id = 'mini-map-container';
 miniMapContainer.style = `
     position: absolute; width: ${MINI_MAP_WIDTH}px; height: ${MINI_MAP_HEIGHT}px;
-    background: #F9F9F9; border: 1px solid rgba(16, 16, 16, 0.1); border-radius: 12px;
+    background: #F9F9F9; border: 1px solid rgba(16, 16, 16, 0.1); border-radius: 5px;
     z-index: 1000; pointer-events: none; box-shadow: none; padding: ${MINI_MAP_PADDING}px; backdrop-filter: blur(2px);
 `;
 plotFrame.appendChild(miniMapContainer);

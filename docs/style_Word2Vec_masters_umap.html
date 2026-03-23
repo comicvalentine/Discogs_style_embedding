@@ -11,7 +11,7 @@ layoutWrapper.style = "display: flex; flex-direction: column; align-items: stret
 plotHost.insertBefore(layoutWrapper, plot);
 
 const plotFrame = document.createElement('div');
-plotFrame.style = "position: relative; padding-top: 20px;";
+plotFrame.style = "position: relative; padding-top: 88px;";
 layoutWrapper.appendChild(plotFrame);
 plotFrame.appendChild(plot);
 
@@ -20,6 +20,7 @@ const UI_STYLE = {
     bg: '#ffffff',
     primary: '#101010',
     secondary: '#e0e0e0',
+    secondarySoft: 'rgba(255, 255, 255, 0.78)',
     textMain: '#101010',
     textMuted: '#666',
     shadow: '0 4px 12px rgba(0,0,0,0.12)',
@@ -27,20 +28,83 @@ const UI_STYLE = {
 };
 
 const CONTROL_HEIGHT = 36;
+const TOP_OVERLAY_PADDING = 20;
+
+const titleBlock = document.createElement('div');
+titleBlock.style = `
+    position: absolute;
+    left: ${TOP_OVERLAY_PADDING}px;
+    top: 12px;
+    z-index: 1001;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px 10px 12px;
+    border: 1px solid rgba(16, 16, 16, 0.08);
+    border-radius: 14px;
+    background: ${UI_STYLE.secondarySoft};
+    box-shadow: ${UI_STYLE.shadow};
+    backdrop-filter: blur(10px);
+    max-width: calc(100% - 320px);
+`;
+
+const titleIcon = document.createElement('img');
+titleIcon.src = 'discogs_icon.svg';
+titleIcon.alt = 'Discogs';
+titleIcon.style = 'width: 32px; height: 32px; display: block; flex: 0 0 auto;';
+
+const titleTextWrap = document.createElement('div');
+titleTextWrap.style = 'display: flex; flex-direction: column; gap: 2px; min-width: 0;';
+
+const titleLabel = document.createElement('div');
+titleLabel.innerText = 'Discogs Sub-genre Map';
+titleLabel.style = `
+    color: ${UI_STYLE.textMain};
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    white-space: nowrap;
+`;
+
+const titleMeta = document.createElement('div');
+titleMeta.innerText = 'Explore neighboring styles and jump straight into Discogs.';
+titleMeta.style = `
+    color: ${UI_STYLE.textMuted};
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+`;
+
+titleTextWrap.appendChild(titleLabel);
+titleTextWrap.appendChild(titleMeta);
+titleBlock.appendChild(titleIcon);
+titleBlock.appendChild(titleTextWrap);
+plotFrame.appendChild(titleBlock);
 
 // 1. Control Bar
 const controlBar = document.createElement('div');
 controlBar.style = `
     position: absolute;
-    left: 20px;
-    top: 8px;
+    right: ${TOP_OVERLAY_PADDING}px;
+    top: 12px;
     z-index: 1000;
-    display: flex; 
-    gap: 12px; 
-    align-items: flex-end; 
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
     flex-wrap: nowrap;
-    padding: 10px;
-    font-family: 'Inter', -apple-system, sans-serif;
+    padding: 10px 12px;
+    border-radius: 14px;
+    border: 1px solid rgba(16, 16, 16, 0.08);
+    background: ${UI_STYLE.secondarySoft};
+    box-shadow: ${UI_STYLE.shadow};
+    backdrop-filter: blur(10px);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    max-width: calc(100% - 380px);
+    overflow-x: auto;
 `;
 plotFrame.appendChild(controlBar);
 
@@ -48,10 +112,12 @@ plotFrame.appendChild(controlBar);
 const createGroup = (label, content) => {
     const group = document.createElement('div');
     group.style = "display: flex; flex-direction: column; gap: 6px;";
-    const labelSpan = document.createElement('span');
-    labelSpan.innerText = label;
-    labelSpan.style = `font-weight: 800; font-size: 11px; color: ${UI_STYLE.textMuted}; text-transform: uppercase; letter-spacing: 0.05em;`;
-    group.appendChild(labelSpan);
+    if (label) {
+        const labelSpan = document.createElement('span');
+        labelSpan.innerText = label;
+        labelSpan.style = `font-weight: 800; font-size: 11px; color: ${UI_STYLE.textMuted}; text-transform: uppercase; letter-spacing: 0.05em;`;
+        group.appendChild(labelSpan);
+    }
     group.appendChild(content);
     return group;
 };
@@ -365,8 +431,14 @@ const globalStyle = document.createElement('style');
 globalStyle.innerHTML = `
     .legendtext { font-family: 'Inter', sans-serif !important; font-size: 12px !important; font-weight: 600 !important; fill: ${UI_STYLE.textMain} !important; }
     .legend { border: 1px solid ${UI_STYLE.secondary} !important; }
+    @media (max-width: 980px) {
+        #mini-map-container {
+            display: none !important;
+        }
+    }
 `;
 document.head.appendChild(globalStyle);
+
 
                         })                };            </script>        </div>
 </body>

@@ -263,7 +263,7 @@ if __name__ == "__main__":
            post_script=post_script,
            visual_cfg=VisualConfig(fig_width=1600, fig_height=1200, 
                                    font_size=12, marker_size = 15,
-                                   init_style="Darkwave", init_dragmode="pan", init_margin=12, init_mode="markers+text"))
+                                   init_style="Coldwave", init_dragmode="pan", init_margin=18, init_mode="markers+text"))
     
     visual(emb_df=emb_df, 
            tag_dict=style_to_main_genre, 
