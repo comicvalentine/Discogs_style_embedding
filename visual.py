@@ -51,9 +51,9 @@ class VisualConfig:
 
     color_palette = px.colors.qualitative.Light24
 
-    paper_bgcolor = "#F9F9F9"
-    plot_bgcolor = "#E2E2E2"
-    grid_color = '#F9F9F9'
+    paper_bgcolor = "white"
+    plot_bgcolor = "white"
+    grid_color = '#E9E9E9'
 
 
 def visual(emb_df, 
@@ -263,14 +263,14 @@ if __name__ == "__main__":
            post_script=post_script,
            visual_cfg=VisualConfig(fig_width=1600, fig_height=1200, 
                                    font_size=12, marker_size = 15,
-                                   init_style="Coldwave", init_dragmode="pan", init_margin=18, init_mode="markers+text"))
+                                   init_style="Coldwave", init_dragmode="pan", init_margin=12, init_mode="markers+text"))
     
-    visual(emb_df=emb_df, 
-           tag_dict=style_to_main_genre, 
-           save_dir = f"{save_dir}_3d.html", 
-           n_components=3, 
-           tag_name="Main Genre",
-           hover_data = genre_prop,
-           umap_kwargs=None,
-           post_script=post_script,
-           visual_cfg=VisualConfig(fig_width=1600, fig_height=1200, init_margin=10))
+    # visual(emb_df=emb_df, 
+    #        tag_dict=style_to_main_genre, 
+    #        save_dir = f"{save_dir}_3d.html", 
+    #        n_components=3, 
+    #        tag_name="Main Genre",
+    #        hover_data = genre_prop,
+    #        umap_kwargs=None,
+    #        post_script=post_script,
+    #        visual_cfg=VisualConfig(fig_width=1600, fig_height=1200, init_margin=10))
