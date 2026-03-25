@@ -1,4 +1,4 @@
-# Discogs Style Embedding
+# [Discogs Style Embedding](https://comicvalentine.github.io/discogs-style-embedding/)
 
 Visualizing relationships between music subgenres from **Discogs**.
 
