@@ -45,7 +45,7 @@ const createGroup = (label, content) => {
 const mainContainer = document.createElement('div');
 mainContainer.style = `
     display: grid; 
-    grid-template-columns: 1fr minmax(220px, 20%);
+    grid-template-columns: 1fr minmax(150px, 20%);
     grid-template-rows: auto 1fr;
     gap: 16px; 
     width: 100%; 
@@ -230,7 +230,7 @@ controlBar.appendChild(createGroup("Zoom", zoomGroupWrapper));
 // 5. Mini-map
 const MINI_MAP_WIDTH_PERCENT = 100;
 const miniMapWrapper = document.createElement('div');
-miniMapWrapper.style = `width: 100%; background: ${UI_STYLE.bgMinimap}; border-radius: 8px; position: relative; overflow: hidden; border: 1px solid ${UI_STYLE.secondary}; aspect-ratio: 1 / 1;`;
+miniMapWrapper.style = `width: 100%; background: ${UI_STYLE.bgMinimap}; border-radius: 8px; position: relative; overflow: hidden; border: 1px solid ${UI_STYLE.secondary}; aspect-ratio: 4 / 3;`;
 sidebar.appendChild(miniMapWrapper);
 
 const miniPlot = document.createElement('div');
@@ -249,22 +249,26 @@ const miniData = plot.data.map(trace => ({
 
 Plotly.newPlot(miniPlot, miniData, {
     margin: { t: 0, b: 0, l: 0, r: 0 },
-    xaxis: { visible: false, fixedrange: true, range: xAll },
-    yaxis: { visible: false, fixedrange: true, range: yAll },
+    xaxis: { visible: false, fixedrange: true, range: xAll, autorange: false },
+    yaxis: { visible: false, fixedrange: true, range: yAll, autorange: false },
     showlegend: false, paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)'
 }, {staticPlot: true});
 
 const updateMiniMapAndViewfinder = () => {
     const fl = plot._fullLayout;
     if (!fl) return;
-
-    const mainAspect = fl.yaxis._length / fl.xaxis._length;
-    
     const miniW = miniMapWrapper.clientWidth;
-    const miniH = miniW * mainAspect;
-    miniMapWrapper.style.height = `${miniH}px`;
+    const miniH = miniMapWrapper.clientHeight;
+    if (!miniW || !miniH) return;
 
-    Plotly.Plots.resize(miniPlot);
+    Plotly.relayout(miniPlot, {
+        width: miniW,
+        height: miniH,
+        'xaxis.range': xAll,
+        'yaxis.range': yAll,
+        'xaxis.autorange': false,
+        'yaxis.autorange': false
+    });
 
     const fullX = fl.xaxis;
     const fullY = fl.yaxis;
@@ -303,17 +307,44 @@ const addExternalLegend = () => {
 
 const resizePlot = () => {
     const parent = plotFrame;
-    Plotly.relayout(plot, {
-        width: parent.clientWidth,
-        height: Math.max(600, window.innerHeight - 250),
+    const nextWidth = parent.clientWidth;
+    const nextHeight = Math.max(600, window.innerHeight - 250);
+    const fl = plot._fullLayout;
+
+    const currentXRange = fl?.xaxis?.range ? [...fl.xaxis.range] : [...xAll];
+    const currentYRange = fl?.yaxis?.range ? [...fl.yaxis.range] : [...yAll];
+    const centerX = (currentXRange[0] + currentXRange[1]) / 2;
+    const centerY = (currentYRange[0] + currentYRange[1]) / 2;
+    const xUnitsPerPixel = fl?.xaxis?._length
+        ? (currentXRange[1] - currentXRange[0]) / fl.xaxis._length
+        : xSpan / Math.max(nextWidth, 1);
+    const yUnitsPerPixel = fl?.yaxis?._length
+        ? (currentYRange[1] - currentYRange[0]) / fl.yaxis._length
+        : ySpan / Math.max(nextHeight, 1);
+
+    return Plotly.relayout(plot, {
+        width: nextWidth,
+        height: nextHeight,
         showlegend: false
+    }).then(() => {
+        const resizedLayout = plot._fullLayout;
+        if (!resizedLayout?.xaxis?._length || !resizedLayout?.yaxis?._length) return;
+
+        const nextHalfX = (xUnitsPerPixel * resizedLayout.xaxis._length) / 2;
+        const nextHalfY = (yUnitsPerPixel * resizedLayout.yaxis._length) / 2;
+
+        return Plotly.relayout(plot, {
+            'xaxis.range': [centerX - nextHalfX, centerX + nextHalfX],
+            'yaxis.range': [centerY - nextHalfY, centerY + nextHalfY],
+            'xaxis.autorange': false,
+            'yaxis.autorange': false
+        });
+    }).then(() => {
+        updateMiniMapAndViewfinder();
     });
 };
 
-const syncAll = () => {
-    updateMiniMapAndViewfinder();
-    resizePlot();
-};
+const syncAll = () => resizePlot();
 
 plot.on('plotly_relayout', updateMiniMapAndViewfinder);
 window.addEventListener('resize', syncAll);
@@ -321,19 +352,13 @@ window.addEventListener('resize', syncAll);
 
 setTimeout(() => {
     addExternalLegend();
-    syncAll();
     Plotly.relayout(plot, {
         margin: { t: 20, b: 20, l: 20, r: 20 },
         paper_bgcolor: UI_STYLE.bgPlotFrame,
         plot_bgcolor: UI_STYLE.bgPlotFrame,
         showlegend: false
-    });
+    }).then(syncAll);
 }, 500);
-
-window.addEventListener('resize', () => {
-    resizePlot();
-    syncAll();
-});
 
 // 7. Interaction
 const styleTag = document.createElement('style');
@@ -345,7 +370,7 @@ plot.on('plotly_unhover', () => plot.classList.remove('hover-pointer'));
 plot.on('plotly_click', (data) => {
     const point = data.points[0];
     if (point && point.text) {
-        const url = `https://www.discogs.com/search?type=masters&page=1&style_exact=${point.text.replace(/ /g, "+")}&sort=related%2Cdesc`;
+        const url = `https://www.discogs.com/search?type=masters&page=1&style_exact=${point.text.replace(/ /g, "+")}&sort=have%2Cdesc`;
         window.open(url, '_blank');
     }
 });
