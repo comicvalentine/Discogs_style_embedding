@@ -370,7 +370,7 @@ plot.on('plotly_unhover', () => plot.classList.remove('hover-pointer'));
 plot.on('plotly_click', (data) => {
     const point = data.points[0];
     if (point && point.text) {
-        const url = `https://www.discogs.com/search?type=masters&page=1&style_exact=${point.text.replace(/ /g, "+")}&sort=have%2Cdesc`;
+        const url = `https://www.discogs.com/search?type=master&page=1&style_exact=${point.text.replace(/ /g, "+")}&sort=have%2Cdesc`;
         window.open(url, '_blank');
     }
 });

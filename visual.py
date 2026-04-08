@@ -265,12 +265,12 @@ if __name__ == "__main__":
                                    font_size=12, marker_size = 15,
                                    init_style="Coldwave", init_dragmode="pan", init_margin=12, init_mode="markers+text"))
     
-    # visual(emb_df=emb_df, 
-    #        tag_dict=style_to_main_genre, 
-    #        save_dir = f"{save_dir}_3d.html", 
-    #        n_components=3, 
-    #        tag_name="Main Genre",
-    #        hover_data = genre_prop,
-    #        umap_kwargs=None,
-    #        post_script=post_script,
-    #        visual_cfg=VisualConfig(fig_width=1600, fig_height=1200, init_margin=10))
+    visual(emb_df=emb_df, 
+           tag_dict=style_to_main_genre, 
+           save_dir = f"{save_dir}_3d.html", 
+           n_components=3, 
+           tag_name="Main Genre",
+           hover_data = genre_prop,
+           umap_kwargs=None,
+           post_script=post_script,
+           visual_cfg=VisualConfig(fig_width=1600, fig_height=1200, init_margin=10))
