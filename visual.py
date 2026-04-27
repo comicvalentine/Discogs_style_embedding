@@ -77,7 +77,7 @@ def visual(emb_df,
     coords = umap_project(emb_df.drop(columns=["style"]), n_components=n_components, umap_kwargs = umap_kwargs)
 
     for i in range(n_components):
-        emb_df[f"dim_{i}"] = coords[:, i]
+        emb_df[f"dim_{i}"] = -coords[:, i]
     
     # Determine axes (x, y) or (x, y, z) based on n_components
     axis_kwargs = {axis: f"dim_{i}"
@@ -165,7 +165,10 @@ def visual(emb_df,
         ) if n_components == 3 else None)
 
     if visual_cfg.init_style is not None:
-        target_row = emb_df[emb_df['style'].str.contains(visual_cfg.init_style, case=False, na=False)]
+        for idx, row in emb_df.iterrows():
+            if visual_cfg.init_style.lower().replace(" ", "") == row["style"].lower().replace(" ", ""):
+                target_row = row
+                break
         
         if not target_row.empty:
 
@@ -178,7 +181,7 @@ def visual(emb_df,
                 col = f"dim_{i}"
                 full_min, full_max = emb_df[col].min(), emb_df[col].max()
                 full_range = full_max - full_min
-                center_val = target_row[col].mean()
+                center_val = target_row[col]
                 
                 half_display_range = (full_range * ratio) / 2
                 new_min = center_val - half_display_range
@@ -263,7 +266,7 @@ if __name__ == "__main__":
            post_script=post_script,
            visual_cfg=VisualConfig(fig_width=1600, fig_height=1200, 
                                    font_size=12, marker_size = 15,
-                                   init_style="Coldwave", init_dragmode="pan", init_margin=12, init_mode="markers+text"))
+                                   init_style="hardcore", init_dragmode="pan", init_margin=12, init_mode="markers+text"))
     
     visual(emb_df=emb_df, 
            tag_dict=style_to_main_genre, 
