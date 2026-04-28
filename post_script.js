@@ -87,29 +87,114 @@ plotFrame.style = `position: relative; background: white; border-radius: ${UI_ST
 leftSection.appendChild(plotFrame);
 plotFrame.appendChild(plot);
 
+
+
 // 2. Controllers (Text, Mode, Reset)
+const icon = {
+    textOn: `
+    <svg width="22" height="18" viewBox="0 0 22 18">
+        <circle cx="5" cy="9" r="3" fill="currentColor"/>
+        <text x="11" y="8" font-size="8" fill="currentColor" font-family="sans-serif">S</text>
+    </svg>
+    `,
+    textOff: `
+    <svg width="22" height="18" viewBox="0 0 22 18">
+        <circle cx="5" cy="9" r="3" fill="currentColor"/>
+    </svg>
+    `,
+    pan: `
+    <svg width="14" height="14" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round">
+    <path d="M12 2v20"/>
+    <path d="M2 12h20"/>
+    </svg>
+    `,
+    focus: `
+    <svg width="14" height="14" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2">
+    <rect x="4" y="4" width="16" height="16" rx="2"/>
+    </svg>
+    `
+};
+
+// TEXT
 const textWrapper = document.createElement('div');
-textWrapper.style = `display: flex; background: ${UI_STYLE.secondary}; padding: 2px; border-radius: 8px; gap: 2px;`;
+textWrapper.style = `
+    display: flex;
+    background: ${UI_STYLE.secondary};
+    padding: 2px;
+    border-radius: 8px;
+    gap: 2px;
+`;
+
 const showBtn = document.createElement('button');
 const hideBtn = document.createElement('button');
+
 const updateTextUI = (show) => {
-    applyButtonStyle(showBtn, show); applyButtonStyle(hideBtn, !show);
-    showBtn.innerText = "ON"; hideBtn.innerText = "OFF";
+    applyButtonStyle(showBtn, show);
+    applyButtonStyle(hideBtn, !show);
+
+    showBtn.innerHTML = `${icon.textOn} ON`;
+    hideBtn.innerHTML = `${icon.textOff} OFF`;
+
+    [showBtn, hideBtn].forEach(btn => {
+        const svg = btn.querySelector('svg');
+        if (svg) svg.style.opacity = btn === showBtn && show ? "1" : "0.7";
+    });
 };
-showBtn.onclick = () => { updateTextUI(true); Plotly.restyle(plot, {mode: 'markers+text'}); };
-hideBtn.onclick = () => { updateTextUI(false); Plotly.restyle(plot, {mode: 'markers'}); };
+
+showBtn.onclick = () => {
+    updateTextUI(true);
+    Plotly.restyle(plot, {mode: 'markers+text'});
+};
+
+hideBtn.onclick = () => {
+    updateTextUI(false);
+    Plotly.restyle(plot, {mode: 'markers'});
+};
+
 updateTextUI(true);
 textWrapper.append(showBtn, hideBtn);
 controlBar.appendChild(createGroup("Text", textWrapper));
 
+
+// MODE
 const modeWrapper = document.createElement('div');
-modeWrapper.style = `display: flex; background: ${UI_STYLE.secondary}; padding: 2px; border-radius: 8px; gap: 2px;`;
+modeWrapper.style = `
+    display: flex;
+    background: ${UI_STYLE.secondary};
+    padding: 2px;
+    border-radius: 8px;
+    gap: 2px;
+`;
+
 const moveBtn = document.createElement('button');
 const focusBtn = document.createElement('button');
-const updateModeUI = (isMove) => { applyButtonStyle(moveBtn, isMove); applyButtonStyle(focusBtn, !isMove); };
-moveBtn.innerText = "Move"; focusBtn.innerText = "Focus";
-moveBtn.onclick = () => { updateModeUI(true); Plotly.relayout(plot, {dragmode: 'pan'}); };
-focusBtn.onclick = () => { updateModeUI(false); Plotly.relayout(plot, {dragmode: 'zoom'}); };
+
+const updateModeUI = (isMove) => {
+    applyButtonStyle(moveBtn, isMove);
+    applyButtonStyle(focusBtn, !isMove);
+
+    moveBtn.innerHTML = `${icon.pan} Move`;
+    focusBtn.innerHTML = `${icon.focus} Focus`;
+
+    [moveBtn, focusBtn].forEach(btn => {
+        const svg = btn.querySelector('svg');
+        if (svg) svg.style.opacity = btn === moveBtn && isMove ? "1" : "0.7";
+    });
+};
+
+moveBtn.onclick = () => {
+    updateModeUI(true);
+    Plotly.relayout(plot, {dragmode: 'pan'});
+};
+
+focusBtn.onclick = () => {
+    updateModeUI(false);
+    Plotly.relayout(plot, {dragmode: 'zoom'});
+};
+
 updateModeUI(true);
 modeWrapper.append(moveBtn, focusBtn);
 controlBar.appendChild(createGroup("Mode", modeWrapper));
@@ -119,7 +204,40 @@ resetWrapper.style = `display: flex; background: ${UI_STYLE.secondary}; padding:
 const resetBtn = document.createElement('button');
 resetBtn.innerText = "Reset View";
 applyButtonStyle(resetBtn, true);
-resetBtn.onclick = () => Plotly.relayout(plot, {'xaxis.autorange': true, 'yaxis.autorange': true, 'shapes': []});
+resetBtn.onclick = () => {
+    const fl = plot._fullLayout;
+
+    // 현재 화면 비율 (pixel 기준)
+    const xLen = fl.xaxis._length;
+    const yLen = fl.yaxis._length;
+    const aspect = xLen / yLen;
+
+    // 1. y: autorange
+    Plotly.relayout(plot, {
+        'yaxis.autorange': true
+    }).then(() => {
+        const fl2 = plot._fullLayout;
+        const yr = fl2.yaxis.range;
+
+        const ySpan = yr[1] - yr[0];
+
+        // 2. x: scale anchor to y
+        const xSpan = ySpan * aspect;
+
+        const xCenter = (fl2.xaxis.range[0] + fl2.xaxis.range[1]) / 2;
+
+        const newX = [
+            xCenter - xSpan / 2,
+            xCenter + xSpan / 2
+        ];
+
+        Plotly.relayout(plot, {
+            'xaxis.range': newX,
+            'xaxis.autorange': false,
+            'shapes': []
+        });
+    });
+};
 resetWrapper.append(resetBtn)
 controlBar.appendChild(createGroup("\u00A0", resetWrapper));
 
