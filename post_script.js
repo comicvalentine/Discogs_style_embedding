@@ -103,7 +103,7 @@ const icon = {
     </svg>
     `,
     pan: `
-    <svg width="14" height="14" viewBox="0 0 24 24"
+    <svg width="10" height="10" viewBox="0 0 24 24"
         fill="none" stroke="currentColor" stroke-width="2"
         stroke-linecap="round">
     <path d="M12 2v20"/>
@@ -111,7 +111,7 @@ const icon = {
     </svg>
     `,
     focus: `
-    <svg width="14" height="14" viewBox="0 0 24 24"
+    <svg width="12" height="12" viewBox="0 0 24 24"
         fill="none" stroke="currentColor" stroke-width="2">
     <rect x="4" y="4" width="16" height="16" rx="2"/>
     </svg>
