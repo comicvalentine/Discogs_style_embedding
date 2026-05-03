@@ -412,14 +412,21 @@ const applyResponsiveLayout = () => {
     const compact = isCompactLayout();
     const legend = sidebar.querySelector('.custom-legend-container');
 
+    document.documentElement.style.height = compact ? 'auto' : '';
+    document.documentElement.style.overflowY = compact ? 'auto' : '';
+    document.body.style.height = compact ? 'auto' : '';
+    document.body.style.minHeight = compact ? '100%' : '';
+    document.body.style.overflowY = compact ? 'auto' : '';
+
     mainContainer.style.gridTemplateColumns = compact ? '1fr' : '1fr minmax(150px, 20%)';
     mainContainer.style.gridTemplateRows = compact ? 'auto 1fr auto' : 'auto 1fr';
     mainContainer.style.padding = compact ? '12px' : '20px';
+    mainContainer.style.paddingBottom = compact ? '32px' : '20px';
 
     leftSection.style.gridColumn = compact ? '1 / -1' : '';
     sidebar.style.gridColumn = compact ? '1 / -1' : '';
     sidebar.style.flexDirection = compact ? 'row' : 'column';
-    sidebar.style.alignItems = compact ? 'stretch' : '';
+    sidebar.style.alignItems = compact ? 'flex-start' : '';
     sidebar.style.gap = compact ? '12px' : '16px';
     sidebar.style.padding = compact ? '12px' : '20px';
     sidebarTitle.style.display = compact ? 'none' : '';
