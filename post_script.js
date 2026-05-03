@@ -90,6 +90,18 @@ plotFrame.style = `position: relative; background: white; border-radius: ${UI_ST
 leftSection.appendChild(plotFrame);
 plotFrame.appendChild(plot);
 
+const focusDragBox = document.createElement('div');
+focusDragBox.style = `
+    position: absolute;
+    display: none;
+    border: 1.5px solid ${UI_STYLE.secondary};
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 0 9999px rgba(16, 16, 16, 0.18);
+    pointer-events: none;
+    z-index: 20;
+`;
+plotFrame.appendChild(focusDragBox);
+
 
 
 // 2. Controllers (Text, Mode, Reset)
@@ -174,6 +186,10 @@ modeWrapper.style = `
 
 const moveBtn = document.createElement('button');
 const focusBtn = document.createElement('button');
+let isFocusMode = false;
+let focusAspectRatio = null;
+let focusDragState = null;
+let suppressPlotClickUntil = 0;
 
 const updateModeUI = (isMove) => {
     applyButtonStyle(moveBtn, isMove);
@@ -189,13 +205,16 @@ const updateModeUI = (isMove) => {
 };
 
 moveBtn.onclick = () => {
+    isFocusMode = false;
     updateModeUI(true);
     Plotly.relayout(plot, {dragmode: 'pan'});
 };
 
 focusBtn.onclick = () => {
+    isFocusMode = true;
+    focusAspectRatio = getVisibleAspectRatio() || focusAspectRatio;
     updateModeUI(false);
-    Plotly.relayout(plot, {dragmode: 'zoom'});
+    Plotly.relayout(plot, {dragmode: false});
 };
 
 updateModeUI(true);
@@ -227,7 +246,7 @@ resetBtn.onclick = () => {
         // 2. x: scale anchor to y
         const xSpan = ySpan * aspect;
 
-        const xCenter = (fl2.xaxis.range[0] + fl2.xaxis.range[1]) / 2;
+        const xCenter = xMean;
 
         const newX = [
             xCenter - xSpan / 2,
@@ -267,6 +286,7 @@ const allX_vals = search_data.map(d => Number(d.dim_0));
 const allY_vals = search_data.map(d => Number(d.dim_1));
 const xAll = [Math.min(...allX_vals), Math.max(...allX_vals)];
 const yAll = [Math.min(...allY_vals), Math.max(...allY_vals)];
+const xMean = allX_vals.reduce((sum, x) => sum + x, 0) / allX_vals.length;
 const xSpan = xAll[1] - xAll[0];
 const ySpan = yAll[1] - yAll[0];
 
@@ -512,7 +532,166 @@ const resizePlot = () => {
 
 const syncAll = () => resizePlot();
 
-plot.on('plotly_relayout', updateMiniMapAndViewfinder);
+const getVisibleAspectRatio = () => {
+    const fl = plot._fullLayout;
+    const xr = fl?.xaxis?.range;
+    const yr = fl?.yaxis?.range;
+    if (!xr || !yr) return null;
+
+    const visibleXSpan = Math.abs(xr[1] - xr[0]);
+    const visibleYSpan = Math.abs(yr[1] - yr[0]);
+    if (!visibleXSpan || !visibleYSpan) return null;
+
+    return visibleXSpan / visibleYSpan;
+};
+
+const getPlotArea = () => {
+    const fl = plot._fullLayout;
+    if (!fl?._size || !fl?.xaxis?._length || !fl?.yaxis?._length) return null;
+
+    const plotRect = plot.getBoundingClientRect();
+    const frameRect = plotFrame.getBoundingClientRect();
+    const left = plotRect.left - frameRect.left + fl._size.l;
+    const top = plotRect.top - frameRect.top + fl._size.t;
+
+    return {
+        left,
+        top,
+        width: fl.xaxis._length,
+        height: fl.yaxis._length
+    };
+};
+
+const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
+const clientPointToPlotPixel = (event, area) => {
+    const frameRect = plotFrame.getBoundingClientRect();
+    return {
+        x: clamp(event.clientX - frameRect.left - area.left, 0, area.width),
+        y: clamp(event.clientY - frameRect.top - area.top, 0, area.height)
+    };
+};
+
+const plotPixelToData = (point) => {
+    const fl = plot._fullLayout;
+    const xr = fl.xaxis.range;
+    const yr = fl.yaxis.range;
+
+    return {
+        x: xr[0] + (point.x / fl.xaxis._length) * (xr[1] - xr[0]),
+        y: yr[1] - (point.y / fl.yaxis._length) * (yr[1] - yr[0])
+    };
+};
+
+const buildAspectLockedFocusBox = (event) => {
+    if (!focusDragState) return null;
+
+    const { area, start } = focusDragState;
+    const current = clientPointToPlotPixel(event, area);
+    const xDirection = current.x >= start.x ? 1 : -1;
+    const yDirection = current.y >= start.y ? 1 : -1;
+    const plotPixelAspect = area.width / area.height;
+
+    let width = Math.abs(current.x - start.x);
+    let height = width / plotPixelAspect;
+
+    const maxHeight = yDirection > 0 ? area.height - start.y : start.y;
+    if (height > maxHeight) {
+        height = maxHeight;
+        width = height * plotPixelAspect;
+    }
+
+    const end = {
+        x: start.x + width * xDirection,
+        y: start.y + height * yDirection
+    };
+
+    return {
+        left: area.left + Math.min(start.x, end.x),
+        top: area.top + Math.min(start.y, end.y),
+        width,
+        height,
+        start,
+        end
+    };
+};
+
+const renderFocusDragBox = (box) => {
+    if (!box || box.width < 2 || box.height < 2) {
+        focusDragBox.style.display = 'none';
+        return;
+    }
+
+    focusDragBox.style.display = 'block';
+    focusDragBox.style.left = `${box.left}px`;
+    focusDragBox.style.top = `${box.top}px`;
+    focusDragBox.style.width = `${box.width}px`;
+    focusDragBox.style.height = `${box.height}px`;
+};
+
+const applyFocusDragZoom = (box) => {
+    if (!box || box.width < 4 || box.height < 4) return;
+
+    const p0 = plotPixelToData(box.start);
+    const p1 = plotPixelToData(box.end);
+    const nextX = [Math.min(p0.x, p1.x), Math.max(p0.x, p1.x)];
+    const nextY = [Math.min(p0.y, p1.y), Math.max(p0.y, p1.y)];
+
+    Plotly.relayout(plot, {
+        'xaxis.range': nextX,
+        'yaxis.range': nextY,
+        'xaxis.autorange': false,
+        'yaxis.autorange': false
+    });
+};
+
+plot.on('plotly_relayout', (eventData) => {
+    focusAspectRatio = getVisibleAspectRatio() || focusAspectRatio;
+    updateMiniMapAndViewfinder();
+});
+
+plotFrame.addEventListener('pointerdown', (event) => {
+    if (!isFocusMode || event.button !== 0) return;
+
+    const area = getPlotArea();
+    if (!area) return;
+
+    const frameRect = plotFrame.getBoundingClientRect();
+    const x = event.clientX - frameRect.left - area.left;
+    const y = event.clientY - frameRect.top - area.top;
+    if (x < 0 || x > area.width || y < 0 || y > area.height) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    focusAspectRatio = getVisibleAspectRatio() || focusAspectRatio;
+    focusDragState = {
+        area,
+        start: { x, y },
+        box: null
+    };
+    plotFrame.setPointerCapture?.(event.pointerId);
+}, true);
+
+window.addEventListener('pointermove', (event) => {
+    if (!focusDragState) return;
+
+    event.preventDefault();
+    focusDragState.box = buildAspectLockedFocusBox(event);
+    renderFocusDragBox(focusDragState.box);
+}, true);
+
+window.addEventListener('pointerup', (event) => {
+    if (!focusDragState) return;
+
+    event.preventDefault();
+    const box = focusDragState.box || buildAspectLockedFocusBox(event);
+    focusDragState = null;
+    focusDragBox.style.display = 'none';
+    suppressPlotClickUntil = Date.now() + 250;
+    applyFocusDragZoom(box);
+}, true);
+
 window.addEventListener('resize', syncAll);
 
 
@@ -534,6 +713,8 @@ document.head.appendChild(styleTag);
 plot.on('plotly_hover', () => plot.classList.add('hover-pointer'));
 plot.on('plotly_unhover', () => plot.classList.remove('hover-pointer'));
 plot.on('plotly_click', (data) => {
+    if (Date.now() < suppressPlotClickUntil) return;
+
     const point = data.points[0];
     if (point && point.text) {
         const url = `https://www.discogs.com/search?type=master&page=1&style_exact=${point.text.replace(/ /g, "+")}&sort=have%2Cdesc`;
