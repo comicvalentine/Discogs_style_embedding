@@ -16,6 +16,7 @@ const UI_STYLE = {
     radius: '12px'
 };
 const CONTROL_HEIGHT = 30;
+const COMPACT_LAYOUT_MAX_WIDTH = 760;
 
 const applyButtonStyle = (btn, isActive, isAccent = false) => {
     btn.style = `padding: 0 14px; height: ${CONTROL_HEIGHT}px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); white-space: nowrap;`;
@@ -75,11 +76,13 @@ sidebar.style = `
     padding: 20px; 
     border-radius: ${UI_STYLE.radius}; 
     box-shadow: ${UI_STYLE.shadow};
-    // height: fit-content; 
-    height: auto
-    // align-self: start;
+    height: auto;
+    box-sizing: border-box;
 `;
-sidebar.innerHTML = `<h3 style="margin:0; font-size:11px; color:${UI_STYLE.textMuted}; text-transform:uppercase; letter-spacing:0.05em;">Overview</h3>`;
+const sidebarTitle = document.createElement('h3');
+sidebarTitle.innerText = 'Overview';
+sidebarTitle.style = `margin:0; font-size:11px; color:${UI_STYLE.textMuted}; text-transform:uppercase; letter-spacing:0.05em;`;
+sidebar.appendChild(sidebarTitle);
 mainContainer.appendChild(sidebar);
 
 const plotFrame = document.createElement('div');
@@ -403,6 +406,40 @@ const updateMiniMapAndViewfinder = () => {
 };
 
 // 6. Legend & Sync
+const isCompactLayout = () => (mainContainer.clientWidth || window.innerWidth) <= COMPACT_LAYOUT_MAX_WIDTH;
+
+const applyResponsiveLayout = () => {
+    const compact = isCompactLayout();
+    const legend = sidebar.querySelector('.custom-legend-container');
+
+    mainContainer.style.gridTemplateColumns = compact ? '1fr' : '1fr minmax(150px, 20%)';
+    mainContainer.style.gridTemplateRows = compact ? 'auto 1fr auto' : 'auto 1fr';
+    mainContainer.style.padding = compact ? '12px' : '20px';
+
+    leftSection.style.gridColumn = compact ? '1 / -1' : '';
+    sidebar.style.gridColumn = compact ? '1 / -1' : '';
+    sidebar.style.flexDirection = compact ? 'row' : 'column';
+    sidebar.style.alignItems = compact ? 'stretch' : '';
+    sidebar.style.gap = compact ? '12px' : '16px';
+    sidebar.style.padding = compact ? '12px' : '20px';
+    sidebarTitle.style.display = compact ? 'none' : '';
+
+    miniMapWrapper.style.width = compact ? '42%' : '100%';
+    miniMapWrapper.style.minWidth = compact ? '130px' : '';
+    miniMapWrapper.style.maxWidth = compact ? '220px' : '';
+    miniMapWrapper.style.flex = compact ? '0 0 42%' : '';
+
+    if (legend) {
+        legend.style.display = compact ? 'grid' : 'flex';
+        legend.style.gridTemplateColumns = compact ? 'repeat(2, minmax(0, 1fr))' : '';
+        legend.style.flex = compact ? '1 1 0' : '';
+        legend.style.minWidth = compact ? '0' : '';
+        legend.style.maxHeight = compact ? 'none' : '300px';
+        legend.style.overflowY = compact ? 'visible' : 'auto';
+        legend.style.marginTop = compact ? '0' : '10px';
+    }
+};
+
 const addExternalLegend = () => {
     const old = sidebar.querySelector('.custom-legend-container'); if (old) old.remove();
     const wrapper = document.createElement('div');
@@ -420,13 +457,17 @@ const addExternalLegend = () => {
         wrapper.appendChild(item);
     });
     sidebar.appendChild(wrapper);
+    applyResponsiveLayout();
 };
 
 
 const resizePlot = () => {
+    applyResponsiveLayout();
     const parent = plotFrame;
     const nextWidth = parent.clientWidth;
-    const nextHeight = Math.max(600, window.innerHeight - 250);
+    const nextHeight = isCompactLayout()
+        ? Math.max(420, window.innerHeight - 320)
+        : Math.max(600, window.innerHeight - 250);
     const fl = plot._fullLayout;
 
     const currentXRange = fl?.xaxis?.range ? [...fl.xaxis.range] : [...xAll];
