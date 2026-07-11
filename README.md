@@ -22,6 +22,6 @@ Visualizing relationships between music subgenres from **Discogs**.
 
 ## Data Sources
 - **Discogs monthly data dump:** [https://data.discogs.com/](https://data.discogs.com/)  
-- **Current version:** 2026-01-01  
-- **Note:** `Word2Vec.py` and `counter.py` use `raw_data/discogs_20260101_masters.xml.gz`.  
+- **Current version:** 2026-07-01  
+- **Note:** `Word2Vec.py` and `counter.py` use `raw_data/discogs_20260701_masters.xml.gz`.  
   > This file is **not included** due to its large size.

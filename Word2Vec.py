@@ -3,7 +3,7 @@ import xml.etree.ElementTree as ET
 from gensim.models import Word2Vec
 import pandas as pd
 
-ver = "20260101"
+ver = "20260701"
 search_type = "masters"
 path = f"./raw_data/discogs_{ver}_{search_type}.xml.gz"
 

@@ -8,7 +8,7 @@ single_counter = Counter()
 pair_counter = Counter()
 max_genre_counter = defaultdict(Counter)
 
-ver = "20260101"
+ver = "20260701"
 search_type = "masters"
 
 cnt = 0
